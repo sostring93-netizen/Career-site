@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+
+<html lang="ko" style="background:#0f1c2e;">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>진로나침반 — AI 진로 상담</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:#0f1c2e; --navy2:#162540; --teal:#1a8c7a; --teal-l:#22b89e;
+  --gold:#c9a84c; --gold-l:#e8c97a; --white:#ffffff; --gray:#8a9bb0;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{background:#0f1c2e;}
+body{font-family:'Noto Sans KR',sans-serif;background:#0f1c2e !important;color:#ffffff !important;min-height:100vh;overflow-x:hidden;}
+
+.stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;}
+.star{position:absolute;background:white;border-radius:50%;animation:twinkle var(–d,3s) ease-in-out infinite;opacity:0;}
+@keyframes twinkle{0%,100%{opacity:0}50%{opacity:var(–o,.6)}}
+
+#app{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:0 20px 80px;}
+
+.site-header{text-align:center;padding:48px 0 26px;}
+.logo-icon{width:64px;height:64px;margin:0 auto 14px;background:linear-gradient(135deg,var(–teal),var(–gold));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;animation:pulse 3s ease-in-out infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 30px rgba(26,140,122,.3)}50%{box-shadow:0 0 60px rgba(26,140,122,.6)}}
+.site-title{font-family:‘Noto Serif KR’,serif;font-size:2rem;font-weight:700;background:linear-gradient(135deg,var(–gold-l),var(–teal-l));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.site-sub{color:var(–gray);font-size:.88rem;margin-top:6px;}
+
+.card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:34px;margin-top:22px;animation:fadeUp .45s ease forwards;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+.prog-wrap{margin-bottom:24px;}
+.prog-top{display:flex;justify-content:space-between;font-size:.75rem;color:var(–gray);margin-bottom:7px;}
+.prog-bar{height:4px;background:rgba(255,255,255,.1);border-radius:10px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(–teal),var(–gold));border-radius:10px;transition:width .6s ease;}
+
+.step-tag{display:inline-block;padding:4px 12px;border-radius:20px;font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;}
+.tag-info{background:rgba(26,140,122,.2);border:1px solid rgba(26,140,122,.5);color:var(–teal-l);}
+.tag-sit{background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.5);color:var(–gold-l);}
+.tag-apt{background:rgba(96,168,255,.15);border:1px solid rgba(96,168,255,.5);color:#90c0ff;}
+.tag-chat{background:rgba(96,168,255,.15);border:1px solid rgba(96,168,255,.5);color:#90c0ff;}
+
+.card-title{font-family:‘Noto Serif KR’,serif;font-size:1.25rem;font-weight:700;line-height:1.5;margin-bottom:7px;}
+.card-desc{color:var(–gray);font-size:.87rem;line-height:1.75;margin-bottom:20px;}
+
+.input-group{margin-bottom:14px;}
+.input-group label{display:block;font-size:.78rem;color:var(–gray);margin-bottom:5px;}
+.input-group input,.input-group select{width:100%;padding:12px 15px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:10px;color:var(–white);font-size:.9rem;font-family:‘Noto Sans KR’,sans-serif;outline:none;transition:border-color .2s;}
+.input-group input:focus,.input-group select:focus{border-color:var(–teal);}
+.input-group input::placeholder{color:rgba(255,255,255,.22);}
+.input-group select option{background:var(–navy2);}
+
+.mbti-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:6px;}
+.mbti-btn{padding:10px 4px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.13);border-radius:9px;color:var(–gray);font-size:.82rem;font-family:‘Noto Sans KR’,sans-serif;cursor:pointer;text-align:center;transition:all .2s;font-weight:500;}
+.mbti-btn:hover{background:rgba(26,140,122,.18);border-color:var(–teal);color:var(–white);}
+.mbti-btn.active{background:rgba(26,140,122,.3);border-color:var(–teal-l);color:var(–white);font-weight:700;}
+.mbti-skip-btn{grid-column:1/-1;margin-top:3px;padding:10px;background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.15);border-radius:9px;color:var(–gray);font-size:.82rem;cursor:pointer;text-align:center;transition:all .2s;font-family:‘Noto Sans KR’,sans-serif;}
+.mbti-skip-btn:hover{background:rgba(255,255,255,.07);color:var(–white);}
+.mbti-skip-btn.active{border-color:var(–teal);color:var(–teal-l);}
+
+.choices{display:flex;flex-direction:column;gap:10px;}
+.choice-btn{padding:13px 16px;display:flex;align-items:flex-start;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.13);border-radius:12px;color:var(–white);font-size:.88rem;font-family:‘Noto Sans KR’,sans-serif;cursor:pointer;text-align:left;transition:all .2s;line-height:1.55;}
+.choice-btn:hover{background:rgba(26,140,122,.2);border-color:var(–teal);transform:translateX(4px);}
+.choice-btn.selected{background:rgba(26,140,122,.25);border-color:var(–teal-l);}
+.choice-letter{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:26px;background:rgba(201,168,76,.2);border:1px solid var(–gold);border-radius:6px;font-size:.75rem;color:var(–gold-l);margin-right:10px;font-weight:700;flex-shrink:0;margin-top:1px;}
+
+.sit-box{background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.22);border-left:3px solid var(–gold);border-radius:10px;padding:15px 17px;margin-bottom:16px;font-size:.87rem;color:#d4c5a0;line-height:1.85;}
+.sit-label{font-size:.68rem;font-weight:700;color:var(–gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+
+.q-label{display:inline-block;font-size:.75rem;color:var(–gray);background:rgba(255,255,255,.06);border-radius:20px;padding:3px 10px;margin-bottom:13px;}
+
+.skip-q{width:100%;padding:11px;margin-top:9px;background:transparent;border:1px dashed rgba(255,255,255,.18);border-radius:10px;color:var(–gray);font-size:.83rem;font-family:‘Noto Sans KR’,sans-serif;cursor:pointer;transition:all .2s;}
+.skip-q:hover{border-color:rgba(255,255,255,.38);color:var(–white);background:rgba(255,255,255,.04);}
+
+.btn{width:100%;padding:14px;margin-top:16px;background:linear-gradient(135deg,var(–teal),#0f7a6a);border:none;border-radius:12px;color:white;font-size:.97rem;font-weight:700;font-family:‘Noto Sans KR’,sans-serif;cursor:pointer;transition:all .2s;box-shadow:0 4px 20px rgba(26,140,122,.3);}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(26,140,122,.45);}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.btn-gold{background:linear-gradient(135deg,var(–gold),#a8872e);box-shadow:0 4px 20px rgba(201,168,76,.3);}
+.btn-ghost{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);box-shadow:none;}
+.btn-ghost:hover{background:rgba(255,255,255,.12);box-shadow:none;}
+
+.chat-win{max-height:380px;overflow-y:auto;padding:4px 0;margin-bottom:14px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.1) transparent;}
+.chat-msg{margin-bottom:13px;animation:fadeUp .3s ease;}
+.chat-msg.user{text-align:right;}
+.chat-bubble{display:inline-block;max-width:80%;padding:11px 15px;border-radius:14px;font-size:.88rem;line-height:1.7;}
+.chat-msg.user .chat-bubble{background:rgba(26,140,122,.3);border:1px solid rgba(26,140,122,.5);border-bottom-right-radius:4px;}
+.chat-msg.ai .chat-bubble{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-bottom-left-radius:4px;text-align:left;}
+.chat-sender{font-size:.7rem;color:var(–gray);margin-bottom:4px;}
+.chat-msg.user .chat-sender{text-align:right;}
+.chat-row{display:flex;gap:9px;align-items:flex-end;}
+.chat-row textarea{flex:1;padding:11px 13px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:12px;color:var(–white);font-size:.87rem;resize:none;font-family:‘Noto Sans KR’,sans-serif;outline:none;min-height:46px;max-height:110px;transition:border-color .2s;}
+.chat-row textarea:focus{border-color:var(–teal);}
+.chat-row textarea::placeholder{color:rgba(255,255,255,.22);}
+.send-btn{width:46px;height:46px;flex-shrink:0;background:var(–teal);border:none;border-radius:12px;color:white;font-size:1.1rem;cursor:pointer;transition:all .2s;}
+.send-btn:hover{background:var(–teal-l);transform:scale(1.05);}
+
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;}
+.result-chip{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.11);border-radius:12px;padding:15px;text-align:center;}
+.chip-label{font-size:.7rem;color:var(–gray);margin-bottom:5px;}
+.chip-value{font-weight:700;font-size:.95rem;color:var(–gold-l);}
+.result-section{margin-bottom:20px;}
+.result-section h3{font-size:.82rem;font-weight:700;color:var(–teal-l);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid rgba(26,140,122,.3);}
+.result-section p{font-size:.88rem;color:#c0cfe0;line-height:1.8;}
+
+.dot{display:inline-block;width:6px;height:6px;background:var(–teal-l);border-radius:50%;margin:0 2px;animation:blink 1.2s ease-in-out infinite;}
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
+
+.hidden{display:none!important;}
+.tc{text-align:center;}
+.note{font-size:.76rem;color:var(–gray);text-align:center;margin-top:9px;}
+
+@media(max-width:500px){
+.card{padding:24px 18px;}
+.result-grid{grid-template-columns:1fr;}
+.site-title{font-size:1.6rem;}
+}
+</style>
+
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<div id="app">
+  <div class="site-header">
+    <div class="logo-icon">🧭</div>
+    <div class="site-title">진로나침반</div>
+    <div class="site-sub">AI가 이끄는 나만의 진로 탐색 여정</div>
+  </div>
+
+  <!-- S0: 시작 -->
+
+  <div class="card" id="s0">
+    <div class="step-tag tag-info">무료 서비스</div>
+    <div class="card-title">나만의 진로를 찾아볼까요? 🧭</div>
+    <div class="card-desc">상황극과 성향 체크를 통해 AI가 당신에게 맞는 진로를 분석해드려요.<br>모든 질문은 건너뛸 수 있어요. 소요시간 약 5~10분.</div>
+    <button class="btn" onclick="showOnly('s1')">진로 탐색 시작하기 →</button>
+  </div>
+
+  <!-- S1: 기본정보 -->
+
+  <div class="card hidden" id="s1">
+    <div class="prog-wrap">
+      <div class="prog-top"><span>기본 정보</span><span>1 / 4</span></div>
+      <div class="prog-bar"><div class="prog-fill" style="width:25%"></div></div>
+    </div>
+    <div class="step-tag tag-info">Step 1 · 기본 정보</div>
+    <div class="card-title">먼저 간단히 알려주세요 👋</div>
+    <div class="card-desc">모두 선택사항이에요. 입력할수록 결과가 더 정확해져요.</div>
+
+```
+<div class="input-group">
+  <label>닉네임</label>
+  <input type="text" id="userNick" placeholder="예: 별빛, 나그네, 희망이 ..." maxlength="12"/>
+</div>
+<div class="input-group">
+  <label>현재 상황 (선택)</label>
+  <select id="userStatus">
+    <option value="">선택하세요</option>
+    <option>중학생</option><option>고등학생</option><option>대학생</option>
+    <option>취업준비생</option><option>직장인 (이직/전환 희망)</option><option>기타</option>
+  </select>
+</div>
+<div class="input-group">
+  <label>관심 분야 (선택)</label>
+  <input type="text" id="userInterest" placeholder="예: 기술, 예술, 사람 돕기, 환경 ..."/>
+</div>
+<div class="input-group">
+  <label>MBTI (선택)</label>
+  <div class="mbti-grid">
+    <button class="mbti-btn" onclick="pickMbti('ISTJ',this)">ISTJ</button>
+    <button class="mbti-btn" onclick="pickMbti('ISFJ',this)">ISFJ</button>
+    <button class="mbti-btn" onclick="pickMbti('INFJ',this)">INFJ</button>
+    <button class="mbti-btn" onclick="pickMbti('INTJ',this)">INTJ</button>
+    <button class="mbti-btn" onclick="pickMbti('ISTP',this)">ISTP</button>
+    <button class="mbti-btn" onclick="pickMbti('ISFP',this)">ISFP</button>
+    <button class="mbti-btn" onclick="pickMbti('INFP',this)">INFP</button>
+    <button class="mbti-btn" onclick="pickMbti('INTP',this)">INTP</button>
+    <button class="mbti-btn" onclick="pickMbti('ESTP',this)">ESTP</button>
+    <button class="mbti-btn" onclick="pickMbti('ESFP',this)">ESFP</button>
+    <button class="mbti-btn" onclick="pickMbti('ENFP',this)">ENFP</button>
+    <button class="mbti-btn" onclick="pickMbti('ENTP',this)">ENTP</button>
+    <button class="mbti-btn" onclick="pickMbti('ESTJ',this)">ESTJ</button>
+    <button class="mbti-btn" onclick="pickMbti('ESFJ',this)">ESFJ</button>
+    <button class="mbti-btn" onclick="pickMbti('ENFJ',this)">ENFJ</button>
+    <button class="mbti-btn" onclick="pickMbti('ENTJ',this)">ENTJ</button>
+    <button class="mbti-skip-btn" onclick="pickMbti('미입력',this)">잘 모르겠어요 / 건너뛰기</button>
+  </div>
+</div>
+<button class="btn" onclick="s1Next()">다음 →</button>
+```
+
+  </div>
+
+  <!-- S2: 랜덤 질문 -->
+
+  <div class="card hidden" id="s2">
+    <div class="prog-wrap">
+      <div class="prog-top"><span id="q-prog-lbl">질문</span><span id="q-prog-cnt">0 / 0</span></div>
+      <div class="prog-bar"><div class="prog-fill" id="q-prog-fill" style="width:50%"></div></div>
+    </div>
+    <div id="q-tag"></div>
+    <div id="q-lbl"></div>
+    <div id="q-body"></div>
+    <button class="skip-q" onclick="skipQ()">⏭ 이 질문 건너뛰기</button>
+  </div>
+
+  <!-- S3: 결과 -->
+
+  <div class="card hidden" id="s3">
+    <div class="prog-wrap">
+      <div class="prog-top"><span>AI 분석 결과</span><span>3 / 4</span></div>
+      <div class="prog-bar"><div class="prog-fill" style="width:75%"></div></div>
+    </div>
+    <div class="step-tag tag-info">Step 3 · 결과</div>
+    <div class="card-title" id="result-title">분석 중...</div>
+    <div id="result-body">
+      <div class="tc" style="padding:36px 0;color:var(--gray);">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        <p style="margin-top:14px;font-size:.84rem;">AI가 답변을 분석하고 있어요</p>
+      </div>
+    </div>
+    <button class="btn btn-gold hidden" id="chat-btn" onclick="initChat()">AI 상담사와 더 이야기하기 💬</button>
+  </div>
+
+  <!-- S4: 채팅 -->
+
+  <div class="card hidden" id="s4">
+    <div class="prog-wrap">
+      <div class="prog-top"><span>1:1 AI 상담</span><span>4 / 4</span></div>
+      <div class="prog-bar"><div class="prog-fill" style="width:100%"></div></div>
+    </div>
+    <div class="step-tag tag-chat">Step 4 · 상담</div>
+    <div class="card-title">AI 진로 상담사와 대화하세요</div>
+    <div class="card-desc" style="margin-bottom:14px">결과를 바탕으로 궁금한 것을 자유롭게 물어보세요.</div>
+    <div class="chat-win" id="chat-win"></div>
+    <div class="chat-row">
+      <textarea id="chatInput" placeholder="궁금한 점을 자유롭게 입력하세요..." rows="2"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}"></textarea>
+      <button class="send-btn" onclick="sendChat()">↑</button>
+    </div>
+    <button class="btn btn-ghost" style="margin-top:20px" onclick="restartAll()">🔄 처음부터 다시하기</button>
+  </div>
+</div>
+
+<script>
+// Stars
+(()=>{
+  const c=document.getElementById('stars');
+  for(let i=0;i<80;i++){
+    const s=document.createElement('div');s.className='star';
+    const z=Math.random()*2.5+.5;
+    s.style.cssText=`width:${z}px;height:${z}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;--o:${.3+Math.random()*.6};animation-delay:${Math.random()*4}s`;
+    c.appendChild(s);
+  }
+})();
+
+// State
+let userData={},answers=[],qQueue=[],qIdx=0,chatHistory=[],selMbti='';
+
+// 상황극 풀 (7개)
+const SITS=[
+  {type:'sit',scene:'🏢 팀 프로젝트 마감 하루 전, 팀원 한 명이 갑자기 "저 못하겠어요"라고 연락했습니다. 나머지 팀원들은 당황해 있고, 팀장이 당신에게 의견을 묻고 있습니다.',q:'당신은 어떻게 하겠습니까?',opts:[
+    {t:'A',txt:'팀원을 먼저 챙긴다. 이유를 듣고 함께 해결책을 찾는다.',v:'공감/인간중심'},
+    {t:'B',txt:'역할을 재분배한다. 남은 인원끼리 나눠 마감을 맞춘다.',v:'실행/효율중심'},
+    {t:'C',txt:'팀장에게 상황을 보고하고 윗선 판단을 기다린다.',v:'절차/안정중심'},
+    {t:'D',txt:'빠진 팀원 몫까지 내가 맡아 혼자 끝낸다.',v:'독립/완벽주의'},
+  ]},
+  {type:'sit',scene:'🎨 회사에서 새 마케팅 캠페인을 맡았습니다. 예산과 자유도가 충분히 주어졌습니다.',q:'가장 먼저 할 행동은?',opts:[
+    {t:'A',txt:'데이터와 경쟁사를 먼저 철저히 분석한다.',v:'분석/논리중심'},
+    {t:'B',txt:'팀원들과 브레인스토밍 미팅을 잡는다.',v:'협업/소통중심'},
+    {t:'C',txt:'과거 성공 사례를 참고해 검증된 방식으로 진행한다.',v:'안정/검증중심'},
+    {t:'D',txt:'바로 창의적인 아이디어를 스케치한다.',v:'창의/도전중심'},
+  ]},
+  {type:'sit',scene:'🌏 꿈에 그리던 해외 취업 기회가 왔습니다. 연봉은 2배지만 가족·친구와 멀어지고 새로운 문화에 적응해야 합니다.',q:'당신의 결정은?',opts:[
+    {t:'A',txt:'당연히 간다. 성장 기회를 놓칠 수 없다.',v:'도전/성장중심'},
+    {t:'B',txt:'가족과 충분히 상의한 후 결정한다.',v:'관계/가족중심'},
+    {t:'C',txt:'안 간다. 지금 가진 것들이 더 소중하다.',v:'안정/현재중심'},
+    {t:'D',txt:'원격근무 등 조건 조정이 가능한지 먼저 협상한다.',v:'전략/협상중심'},
+  ]},
+  {type:'sit',scene:'📚 혼자 공부하다 막히는 부분이 생겼습니다. 마감은 내일입니다.',q:'어떻게 하겠습니까?',opts:[
+    {t:'A',txt:'인터넷과 책을 뒤져 끝까지 혼자 해결한다.',v:'자기주도/독립형'},
+    {t:'B',txt:'아는 친구나 선배에게 바로 물어본다.',v:'사교/협력형'},
+    {t:'C',txt:'유튜브나 강의로 개념부터 다시 잡는다.',v:'체계/학습중심'},
+    {t:'D',txt:'일단 넘어가고 마감 후에 채운다.',v:'유연/실용중심'},
+  ]},
+  {type:'sit',scene:'💡 모임에서 내 아이디어가 반응이 별로였고, 리더는 다른 사람 의견을 채택했습니다.',q:'당신의 반응은?',opts:[
+    {t:'A',txt:'왜 안 됐는지 이유를 조용히 분석한다.',v:'내성/분석형'},
+    {t:'B',txt:'채택된 아이디어를 적극 도와 팀에 기여한다.',v:'협력/헌신형'},
+    {t:'C',txt:'다음 기회를 위해 아이디어를 더 구체화해 둔다.',v:'준비/전략형'},
+    {t:'D',txt:'솔직하게 내 의견을 한 번 더 어필한다.',v:'주도/표현형'},
+  ]},
+  {type:'sit',scene:'🤝 친한 친구가 큰 실수를 저질렀습니다. 당신만 알고 있습니다.',q:'어떻게 하겠습니까?',opts:[
+    {t:'A',txt:'친구에게 솔직히 말하고 함께 해결책을 찾는다.',v:'공감/직면형'},
+    {t:'B',txt:'친구가 스스로 해결하도록 기다린다.',v:'존중/거리두기형'},
+    {t:'C',txt:'조심스럽게 모르는 척하며 지켜본다.',v:'회피/관망형'},
+    {t:'D',txt:'피해자가 있다면 알려야 한다고 생각한다.',v:'원칙/정직형'},
+  ]},
+  {type:'sit',scene:'🏆 열심히 준비한 프레젠테이션이 큰 호평을 받았습니다.',q:'그 순간 가장 먼저 드는 생각은?',opts:[
+    {t:'A',txt:'함께한 팀원들이 떠오르고 고마움을 전하고 싶다.',v:'관계/배려형'},
+    {t:'B',txt:'다음엔 더 잘할 수 있겠다는 자신감이 생긴다.',v:'성취/성장형'},
+    {t:'C',txt:'내 노력이 인정받았다는 뿌듯함이 크다.',v:'인정/자존감형'},
+    {t:'D',txt:'이걸 발판 삼아 더 큰 기회를 잡고 싶다.',v:'야망/확장형'},
+  ]},
+];
+
+// 인적성 풀 (8개)
+const APTS=[
+  {type:'apt',q:'새로운 아이디어가 생겼을 때 나는...',opts:[
+    {t:'A',txt:'바로 실행에 옮긴다',v:'즉흥/실행형'},
+    {t:'B',txt:'충분히 계획을 세운 뒤 움직인다',v:'계획/신중형'},
+    {t:'C',txt:'주변 사람들에게 먼저 이야기한다',v:'소통/공유형'},
+    {t:'D',txt:'혼자 조용히 발전시킨다',v:'내향/독립형'},
+  ]},
+  {type:'apt',q:'힘든 일이 생겼을 때 주로...',opts:[
+    {t:'A',txt:'친한 친구나 가족에게 털어놓는다',v:'사회적지지형'},
+    {t:'B',txt:'혼자 해결책을 찾으며 극복한다',v:'자기해결형'},
+    {t:'C',txt:'운동이나 취미로 기분을 전환한다',v:'활동적해소형'},
+    {t:'D',txt:'일에 더 집중하며 잊으려 한다',v:'과업집중형'},
+  ]},
+  {type:'apt',q:'이상적인 직장 환경은?',opts:[
+    {t:'A',txt:'자유롭고 창의적인 분위기',v:'창의/자율형'},
+    {t:'B',txt:'안정적이고 체계적인 조직',v:'안정/체계형'},
+    {t:'C',txt:'사람들과 활발히 소통하는 환경',v:'사교/협업형'},
+    {t:'D',txt:'전문성을 깊이 키울 수 있는 곳',v:'전문/성장형'},
+  ]},
+  {type:'apt',q:'가장 뿌듯함을 느끼는 순간은?',opts:[
+    {t:'A',txt:'누군가가 내 덕에 도움을 받았을 때',v:'봉사/공헌형'},
+    {t:'B',txt:'어려운 문제를 내 힘으로 해결했을 때',v:'성취/독립형'},
+    {t:'C',txt:'창의적인 결과물이 완성됐을 때',v:'창의/표현형'},
+    {t:'D',txt:'팀이 함께 목표를 달성했을 때',v:'팀워크/협력형'},
+  ]},
+  {type:'apt',q:'결정을 내릴 때 나는 주로...',opts:[
+    {t:'A',txt:'데이터와 논리를 먼저 따진다',v:'논리/분석형'},
+    {t:'B',txt:'직감과 느낌을 중요하게 여긴다',v:'직관/감성형'},
+    {t:'C',txt:'주변 사람들의 의견을 많이 듣는다',v:'관계/공감형'},
+    {t:'D',txt:'경험에서 검증된 방식을 따른다',v:'경험/안정형'},
+  ]},
+  {type:'apt',q:'주말에 가장 즐거운 시간은?',opts:[
+    {t:'A',txt:'새로운 곳·새로운 사람을 만난다',v:'탐험/사교형'},
+    {t:'B',txt:'혼자 좋아하는 취미에 집중한다',v:'내향/몰입형'},
+    {t:'C',txt:'가족이나 친구와 편하게 쉰다',v:'관계/안정형'},
+    {t:'D',txt:'배우고 싶은 것을 공부하거나 기술을 익힌다',v:'성장/탐구형'},
+  ]},
+  {type:'apt',q:'내가 가진 가장 큰 강점은?',opts:[
+    {t:'A',txt:'꼼꼼하고 실수가 적다',v:'정확/완벽형'},
+    {t:'B',txt:'사람들과 쉽게 친해진다',v:'친화/소통형'},
+    {t:'C',txt:'아이디어가 풍부하고 창의적이다',v:'창의/발산형'},
+    {t:'D',txt:'목표를 세우면 끝까지 해낸다',v:'의지/지속형'},
+  ]},
+  {type:'apt',q:'10년 뒤 내 모습으로 가장 가까운 것은?',opts:[
+    {t:'A',txt:'한 분야의 전문가로 인정받고 있다',v:'전문가 지향'},
+    {t:'B',txt:'많은 사람과 함께 일하는 리더가 되어 있다',v:'리더십 지향'},
+    {t:'C',txt:'내가 만든 무언가가 세상에 존재한다',v:'창작/창업 지향'},
+    {t:'D',txt:'사람들에게 도움이 되는 일을 하고 있다',v:'사회기여 지향'},
+  ]},
+];
+
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+function show(id){document.getElementById(id).classList.remove('hidden');}
+function hide(id){document.getElementById(id).classList.add('hidden');}
+function showOnly(id){['s0','s1','s2','s3','s4'].forEach(s=>hide(s));show(id);window.scrollTo({top:0,behavior:'smooth'});}
+
+function pickMbti(v,btn){
+  selMbti=v;
+  document.querySelectorAll('.mbti-btn,.mbti-skip-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function s1Next(){
+  userData.nick=document.getElementById('userNick').value.trim()||'여행자';
+  userData.status=document.getElementById('userStatus').value||'미입력';
+  userData.interest=document.getElementById('userInterest').value.trim()||'미입력';
+  userData.mbti=selMbti||'미입력';
+  buildQueue();
+}
+
+function buildQueue(){
+  const sitPick=shuffle(SITS).slice(0,4);
+  const aptPick=shuffle(APTS).slice(0,5);
+  qQueue=shuffle([...sitPick,...aptPick]);
+  qIdx=0;answers=[];
+  showOnly('s2');renderQ();
+}
+
+function renderQ(){
+  if(qIdx>=qQueue.length){finishQ();return;}
+  const q=qQueue[qIdx];
+  const isSit=q.type==='sit';
+  const pct=25+((qIdx/qQueue.length)*50);
+  document.getElementById('q-prog-lbl').textContent=isSit?'🎭 상황극':'🧩 성향 체크';
+  document.getElementById('q-prog-cnt').textContent=`${qIdx+1} / ${qQueue.length}`;
+  document.getElementById('q-prog-fill').style.width=pct+'%';
+  document.getElementById('q-tag').innerHTML=isSit
+    ?`<div class="step-tag tag-sit">🎭 상황극</div>`
+    :`<div class="step-tag tag-apt">🧩 성향 체크</div>`;
+  document.getElementById('q-lbl').innerHTML=
+    `<div class="q-label">질문 ${qIdx+1} / ${qQueue.length} &nbsp;·&nbsp; 건너뛰기 가능</div>`;
+  const body=document.getElementById('q-body');
+  if(isSit){
+    body.innerHTML=`
+      <div class="sit-box"><div class="sit-label">📍 상황</div>${q.scene}</div>
+      <p style="font-size:.9rem;color:#c0cfe0;font-weight:600;margin-bottom:12px;line-height:1.6">${q.q}</p>
+      <div class="choices">${q.opts.map(o=>`<button class="choice-btn" onclick="pickQ('${o.v}',this)"><span class="choice-letter">${o.t}</span>${o.txt}</button>`).join('')}</div>`;
+  } else {
+    body.innerHTML=`
+      <p style="font-size:1rem;color:var(--white);font-weight:600;margin-bottom:13px;line-height:1.65">${q.q}</p>
+      <div class="choices">${q.opts.map(o=>`<button class="choice-btn" onclick="pickQ('${o.v}',this)"><span class="choice-letter">${o.t}</span>${o.txt}</button>`).join('')}</div>`;
+  }
+}
+
+function pickQ(val,btn){
+  document.querySelectorAll('#q-body .choice-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  answers.push({type:qQueue[qIdx].type,val});
+  setTimeout(()=>{qIdx++;renderQ();},400);
+}
+
+function skipQ(){
+  answers.push({type:qQueue[qIdx].type,val:'(건너뜀)'});
+  qIdx++;renderQ();
+}
+
+function finishQ(){showOnly('s3');runAnalysis();}
+
+async function callAPI(body){
+  const res=await fetch('/api/chat',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(body)
+  });
+  return res.json();
+}
+
+async function runAnalysis(){
+  const sitA=answers.filter(a=>a.type==='sit'&&a.val!=='(건너뜀)');
+  const aptA=answers.filter(a=>a.type==='apt'&&a.val!=='(건너뜀)');
+  const skipped=answers.filter(a=>a.val==='(건너뜀)').length;
+  const prompt=`당신은 전문 진로 상담사입니다. 아래 정보로 진로 분석 리포트를 JSON으로만 작성하세요. JSON 외 다른 텍스트는 절대 포함하지 마세요.
+
+[기본 정보]
+닉네임: ${userData.nick} / 상황: ${userData.status} / 관심분야: ${userData.interest} / MBTI: ${userData.mbti}
+
+[상황극 응답]
+${sitA.length?sitA.map((a,i)=>`${i+1}. ${a.val}`).join('\n'):'(모두 건너뜀)'}
+
+[성향 응답]
+${aptA.length?aptA.map((a,i)=>`${i+1}. ${a.val}`).join('\n'):'(모두 건너뜀)'}
+건너뛴 문항: ${skipped}개
+
+{
+  "personality_type": "성격 유형 한 줄",
+  "core_strengths": ["강점1","강점2","강점3"],
+  "career_recommendations": [
+    {"title":"직업명","reason":"추천 이유 한 문장"},
+    {"title":"직업명","reason":"추천 이유 한 문장"},
+    {"title":"직업명","reason":"추천 이유 한 문장"}
+  ],
+  "growth_direction": "성장 방향 2~3문장",
+  "first_action": "지금 당장 할 수 있는 첫 번째 액션 한 문장",
+  "summary_message": "닉네임님께 전하는 따뜻한 한마디 2~3문장"
+}`;
+  try{
+    const data=await callAPI({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]});
+    if(data.error)throw new Error(data.error.message);
+    const raw=data.content[0].text.replace(/```json|```/g,'').trim();
+    const r=JSON.parse(raw);
+    userData.result=r;
+    renderResult(r);
+  }catch(e){
+    document.getElementById('result-body').innerHTML=`<p style="color:#ff6b6b;font-size:.9rem">⚠️ 오류가 발생했습니다.<br><small>${e.message}</small></p>`;
+  }
+}
+
+function renderResult(r){
+  document.getElementById('result-title').textContent=`${userData.nick}님의 진로 분석 결과 🎯`;
+  document.getElementById('result-body').innerHTML=`
+    <div class="result-grid">
+      <div class="result-chip"><div class="chip-label">성격 유형</div><div class="chip-value">${r.personality_type}</div></div>
+      <div class="result-chip"><div class="chip-label">핵심 강점</div><div class="chip-value">${r.core_strengths.slice(0,2).join(' · ')}</div></div>
+    </div>
+    <div class="result-section">
+      <h3>💼 추천 직업</h3>
+      ${r.career_recommendations.map(c=>`<div style="margin-bottom:10px;padding:12px 14px;background:rgba(255,255,255,.04);border-radius:10px;border-left:3px solid var(--teal)"><strong style="color:var(--white)">${c.title}</strong><p style="margin-top:4px;font-size:.83rem">${c.reason}</p></div>`).join('')}
+    </div>
+    <div class="result-section"><h3>🌱 성장 방향</h3><p>${r.growth_direction}</p></div>
+    <div class="result-section"><h3>⚡ 지금 당장 할 수 있는 것</h3><p style="color:var(--gold-l);font-weight:500">${r.first_action}</p></div>
+    <div style="background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.25);border-radius:12px;padding:16px;margin-top:2px">
+      <p style="font-size:.84rem;color:#d4c5a0;line-height:1.85;font-style:italic">"${r.summary_message}"</p>
+    </div>`;
+  show('chat-btn');
+}
+
+function initChat(){
+  showOnly('s4');chatHistory=[];
+  addMsg('ai',`안녕하세요, ${userData.nick}님! 분석 결과를 바탕으로 더 구체적인 이야기를 나눠볼게요. 궁금한 것을 자유롭게 물어보세요 😊`);
+}
+
+function addMsg(role,text){
+  const w=document.getElementById('chat-win');
+  const d=document.createElement('div');d.className=`chat-msg ${role}`;
+  d.innerHTML=`<div class="chat-sender">${role==='ai'?'🧭 AI 상담사':'나'}</div><div class="chat-bubble">${text.replace(/\n/g,'<br>')}</div>`;
+  w.appendChild(d);w.scrollTop=w.scrollHeight;
+}
+
+function showTyping(){
+  const w=document.getElementById('chat-win');
+  const d=document.createElement('div');d.className='chat-msg ai';d.id='typing';
+  d.innerHTML=`<div class="chat-sender">🧭 AI 상담사</div><div class="chat-bubble"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>`;
+  w.appendChild(d);w.scrollTop=w.scrollHeight;
+}
+
+async function sendChat(){
+  const inp=document.getElementById('chatInput');
+  const msg=inp.value.trim();if(!msg)return;
+  inp.value='';addMsg('user',msg);
+  chatHistory.push({role:'user',content:msg});showTyping();
+  const sys=`당신은 전문 진로 상담사입니다. 사용자: ${userData.nick}(${userData.status}) MBTI:${userData.mbti} 분석-성격:${userData.result?.personality_type} 추천직업:${userData.result?.career_recommendations?.map(c=>c.title).join(',')} 강점:${userData.result?.core_strengths?.join(',')}. 따뜻하고 전문적으로 3~5문장으로 답하세요.`;
+  try{
+    const data=await callAPI({model:'claude-sonnet-4-20250514',max_tokens:500,system:sys,messages:chatHistory});
+    const reply=data.content[0].text;
+    chatHistory.push({role:'assistant',content:reply});
+    document.getElementById('typing')?.remove();
+    addMsg('ai',reply);
+  }catch(e){
+    document.getElementById('typing')?.remove();
+    addMsg('ai','죄송합니다, 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+  }
+}
+
+function restartAll(){
+  userData={};answers=[];qQueue=[];qIdx=0;chatHistory=[];selMbti='';
+  document.getElementById('userNick').value='';
+  document.getElementById('userStatus').value='';
+  document.getElementById('userInterest').value='';
+  document.querySelectorAll('.mbti-btn,.mbti-skip-btn').forEach(b=>b.classList.remove('active'));
+  hide('chat-btn');showOnly('s0');
+}
+</script>
+
+</body>
+</html>
